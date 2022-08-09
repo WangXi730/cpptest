@@ -1,0 +1,464 @@
+#pragma once
+#include<iostream>
+#include<vector>
+#include<stack>
+using namespace std;
+
+namespace wx {
+	template<class Type>
+	class AVL_Tree;
+
+	template<class Type>
+	class AVL_Node {
+	public:
+		friend class AVL_Tree<Type>;
+		//构造方法
+		AVL_Node(Type val = Type(), AVL_Node<Type>* l = nullptr, AVL_Node<Type>* r = nullptr);
+	private:
+		int bf = 0;
+		Type data;
+		AVL_Node<Type>* left;
+		AVL_Node<Type>* right;
+	};
+
+	//构造方法
+	template<class Type>
+	AVL_Node<Type>::AVL_Node(Type val, AVL_Node<Type>* l, AVL_Node<Type>* r) :left(l), right(r), data(val) {}
+
+	template<class Type>
+	class AVL_Tree {
+	public:
+		//构造方法
+		AVL_Tree();
+		//插入方法
+		void insert(Type val);
+		//删除方法
+		void remove(Type val);
+	protected:
+		//旋转方法
+		void RotateL(AVL_Node<Type>*& ptr) {	//	\
+			//创建指针
+			AVL_Node<Type>* subl = ptr;
+			ptr = subl->right;
+			AVL_Node<Type>* subr = ptr->right;
+			//旋转
+			subl->right = ptr->left;
+			ptr->left = subl;
+			//bf赋值为0
+			subl->bf = 0;
+			ptr->bf = 0;
+		}
+		void RotateR(AVL_Node<Type>*& ptr) {	//	/
+			//创建指针
+			AVL_Node<Type>* subr = ptr;
+			ptr = subr->left;
+			AVL_Node<Type>* subl = ptr->left;
+			//旋转
+			subr->left = ptr->right;
+			ptr->right = subr;
+			//bf赋值为0
+			subl->bf = 0;
+			ptr->bf = 0;
+		}
+		void RotateLR(AVL_Node<Type>*& ptr) {//	<
+			//创建指针
+			AVL_Node<Type>* subl = ptr->left;
+			AVL_Node<Type>* subr = ptr;
+			ptr = subl->right;
+			//旋转
+			//左旋
+			subl->right = ptr->left;
+			ptr->left = subl;
+			//右旋
+			subr->left = ptr->right;
+			ptr->right = subr;
+			//修改bf
+			if (ptr->bf == 0) {
+				subr->bf = 0;
+				subl->bf = 0;
+			}
+			else if (ptr->bf == 1) {
+				ptr->bf = 0;
+				subr->bf = 0;
+				subl->bf = -1;
+			}
+			else if (ptr->bf == -1) {
+				ptr->bf = 0;
+				subl->bf = 0;
+				subr->bf = -1;
+			}
+		}
+		void RotateRL(AVL_Node<Type>*& ptr) {	//	>
+			//创建指针
+			AVL_Node<Type>* subl = ptr;
+			AVL_Node<Type>* subr = ptr->right;
+			ptr = subr->left;
+			//旋转
+			//左旋
+			subr->left = ptr->right;
+			ptr->right = subr;
+			//右旋
+			subl->right = ptr->left;
+			ptr->left = subl;
+			//修改bf
+			if (ptr->bf == 0) {
+				subl->bf = 0;
+				subr->bf = 0;
+			}
+			else if (ptr->bf == -1)
+			{
+				subl->bf = 0;
+				subr->bf = 1;
+			}
+			else if (ptr->bf == 1) {
+				subl->bf = -1;
+				subr->bf = 0;
+				ptr->bf = 0;
+			}
+		}
+		//内部的插入方法
+		void INSERT(Type val, AVL_Node<Type>*& th) {
+			AVL_Node<Type>* tmp = th;
+			//先按照 BST 树的方式插入
+			//找到插入位置，并记录父节点
+			AVL_Node<Type>* pt = nullptr;
+			//制造一个栈，记录路径，找到开始调整 bf 的结点
+			stack<AVL_Node<Type>*> st;
+			while (tmp != nullptr) {
+				if (val < tmp->data) {
+					pt = tmp;
+					tmp = tmp->left;
+					st.push(pt);
+				}
+				else if (val > tmp->data) {
+					pt = tmp;
+					tmp = tmp->right;
+					st.push(pt);
+				}
+			}
+			//插入
+			if (val > pt->data) {
+				pt->right = new AVL_Node<Type>(val);
+				tmp = pt->right;
+			}
+			else if (val < pt->data) {
+				pt->left = new AVL_Node<Type>(val);
+				tmp = pt->left;
+			}
+			else {
+				return;
+			}
+
+			//否则就给路径上的结点该加就加，该减就减，直到平衡被破坏
+			while (!st.empty()) {
+				//让pt始终指向tmp的父结点
+				pt = st.top();
+				st.pop();
+				if (tmp == pt->left)
+					pt->bf -= 1;	//左子树高度+1
+				else
+					pt->bf += 1;	//右子树高度+1
+				//现在，pt的bf调整结束，如果不平衡，就需要进行旋转
+				if ((pt->bf == 1) || (pt->bf == -1)) {
+					tmp = pt;
+					continue;
+				}
+				else if (pt->bf == 0) {
+					//任何时候为0，都意味着不再会继续改变改变其父结点的bf，结束循环
+					break;
+				}
+				else if ((pt->bf > 0) && (tmp->bf > 0)) {	//	\
+					//采用左旋转
+					tmp = pt;
+					if (tmp == th)
+						RotateL(th);
+					else {
+						pt = st.top();
+						if (tmp == pt->left)
+							RotateL(pt->left);
+						else if (tmp == pt->right)
+							RotateL(pt->right);
+					}
+					break;
+				}
+				else if ((pt->bf > 0) && (tmp->bf < 0)) {	//	>
+					//先右后左
+					tmp = pt;
+					if (tmp == th)
+						RotateRL(th);
+					else {
+						pt = st.top();
+						if (pt->left == tmp)
+							RotateRL(pt->left);
+						else if (pt->right == tmp)
+							RotateRL(pt->right);
+					}
+					break;
+				}
+				else if ((pt->bf < 0) && (tmp->bf < 0)) {	//	/
+					//右旋转
+					tmp = pt;
+					if (tmp == th)
+						RotateR(pt);
+					else {
+						pt = st.top();
+						if (pt->left == tmp)
+							RotateR(pt->left);
+						else if (pt->right == tmp)
+							RotateR(pt->right);
+					}
+					break;
+				}
+				else if (pt->bf < 0 && tmp->bf>0) {		//	<
+					//先左后右
+					tmp = pt;
+					if (tmp == th)
+						RotateLR(th);
+					else {
+						pt = st.top();
+						if (pt->left == tmp)
+							RotateLR(pt->left);
+						else if (pt->right == tmp)
+							RotateLR(pt->right);
+					}
+					break;
+				}
+			}
+
+		}
+		//内部删除方法
+		void Remove(AVL_Node<Type>* ptr, Type val) {
+			// 1、按照BST树删除
+			AVL_Node<Type>* pptr = nullptr;
+			stack<AVL_Node<Type>*> st;
+			while (ptr != nullptr) {
+				if (val > ptr->data) {
+					//删除了右树的结点
+					pptr = ptr;
+					ptr = ptr->right;
+					st.push(pptr);
+				}
+				else if (val < ptr->data) {
+					//删除了左树的结点
+					pptr = ptr;
+					ptr = ptr->left;
+					st.push(pptr);
+				}
+				else {
+					//删除了该结点
+					break;
+				}
+			}
+			if (ptr == nullptr) {
+				//代表查找失败
+				return;
+			}
+			//删除
+			if (ptr->left == nullptr && ptr->right == nullptr) {
+				//无左右树，直接删除
+				delete ptr;
+				if (pptr == nullptr)
+					root = nullptr;
+				else {
+					if (pptr->data > val) {
+						pptr->left = nullptr;
+					}
+					else {
+						pptr->right = nullptr;
+					}
+				}
+			}
+			else if (ptr->left == nullptr || ptr->right == nullptr) {
+				//有一颗子树，代替ptr
+				AVL_Node<Type>* tmp = ptr;
+				ptr = ptr->left != nullptr ? ptr->left : ptr->right;
+				if (tmp->left == ptr) {
+					if (pptr == nullptr) {
+						//删除了根结点
+						root = ptr;
+					}
+					else if (pptr->left == tmp) {
+						pptr->left = ptr;
+					}
+					else if (pptr->right == tmp) {
+						pptr->right = ptr;
+					}
+					delete tmp;
+				}
+				else {
+					if (pptr == nullptr) {
+						//删除了根结点
+						root = ptr;
+					}
+					else if (pptr->left == tmp) {
+						pptr->left = ptr;
+					}
+					else if (pptr->right == tmp) {
+						pptr->right = ptr;
+					}
+					delete tmp;
+				}
+			}
+			else {
+				//两颗子树都有，找左树的最大值（或者右树的最小值）与这个换，然后删除
+				AVL_Node<Type>* tmp = ptr;	//记录当下要删除的结点ptr
+				ptr = ptr->left;
+				st.push(tmp);
+				while (ptr != nullptr) {
+					pptr = ptr;
+					ptr = ptr->right;
+					st.push(pptr);
+				}
+				st.pop();
+				tmp->data = pptr->data;
+				ptr = st.top();
+				if (ptr->left == pptr)
+					ptr->left = nullptr;
+				else
+					ptr->right = nullptr;
+				val = pptr->data;//我们认为，删除了被替换的那个结点，由于是替换结点的左树，所以下面的==情况也认为是左树
+				delete pptr;
+			}
+			// 2、调整
+			while (!st.empty()) {
+				pptr = st.top();
+				st.pop();
+				if (pptr->data >= val) {
+					//代表删除的数据在左树
+					pptr->bf += 1;
+				}
+				else {
+					pptr->bf -= 1;
+				}
+				//判断是否会影响pptr父结点的平衡
+				if (pptr->bf == 1 || pptr->bf == -1) {
+					return;
+				}
+				//然后判断该结点是否平衡
+				else if (pptr->bf == 0) {
+					val = pptr->data;
+					continue;
+				}
+				//走到这儿，说明不平衡
+				else {
+					//先让ptr指向pptr的较高的子树的结点
+					if (pptr->bf > 0)
+						ptr = pptr->right;
+					else
+						ptr = pptr->left;
+					//然后判断ptr的平衡因子
+					if (ptr->bf == 0) {
+						//进行单旋转
+						if (pptr->left == ptr) {
+							//右旋转
+							if (root == pptr)
+								RotateR(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == pptr)
+									RotateR(tmp->left);
+								else
+									RotateR(tmp->right);
+							}
+							//调整平衡因子
+							pptr->bf = -1;
+							ptr->bf = 1;
+						}
+						else {
+							//左旋转
+							if (root == pptr)
+								RotateL(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == pptr)
+									RotateL(tmp->left);
+								else
+									RotateL(tmp->right);
+							}
+							//调整平衡因子
+							pptr->bf = 1;
+							ptr->bf = -1;
+						}
+						//然后就可以结束了，没有破坏上面的结点平衡了
+						return;
+					}
+					else {
+						//这是ptr->bf != 0的情况
+						//先进行旋转
+						if (pptr->bf < 0 && ptr->bf < 0) {
+							//	/
+							if (root == pptr)
+								RotateR(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == pptr)
+									RotateR(tmp->left);
+								else
+									RotateR(tmp->right);
+							}
+						}
+						else if (pptr->bf > 0 && ptr->bf > 0) {
+							if (root == pptr)
+								RotateL(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == pptr)
+									RotateL(tmp->left);
+								else
+									RotateL(tmp->right);
+							}
+						}
+						else if (pptr->bf > 0 && ptr->bf < 0) {
+							if (root == pptr)
+								RotateRL(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == tmp)
+									RotateRL(tmp->left);
+								else
+									RotateRL(tmp->right);
+							}
+						}
+						else {
+							if (root == pptr)
+								RotateLR(root);
+							else {
+								AVL_Node<Type>* tmp = st.top();
+								if (tmp->left == tmp)
+									RotateLR(tmp->left);
+								else
+									RotateLR(tmp->right);
+							}
+
+						}
+					}
+
+				}
+			}
+		}
+	private:
+		AVL_Node<Type>* root;
+	};
+
+	//构造方法
+	template<class Type>
+	AVL_Tree<Type>::AVL_Tree() :root(nullptr) {}
+	//插入方法
+	template<class Type>
+	void AVL_Tree<Type>::insert(Type val) {
+		if (root == nullptr) {
+			root = new AVL_Node<Type>(val);
+			return;
+		}
+
+		//调用内部插入方法
+		INSERT(val, root);
+	}
+	//删除方法
+	template<class Type>
+	void AVL_Tree<Type>::remove(Type val) {
+		//调用内部删除方法
+		Remove(root, val);
+	}
+
+}
