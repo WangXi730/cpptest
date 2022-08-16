@@ -160,6 +160,20 @@ public:
         }
         return _a;
     }
+//剑指 Offer 66. 构建乘积数组
+public:
+        vector<int> constructArr(vector<int>& a) {
+            vector<int> res(a.size(), 1);
+            for (int i = 1; i < a.size(); ++i) {
+                res[i] = a[i - 1] * res[i - 1];
+            }
+            int p = 1;
+            for (int i = a.size() - 2; i >= 0; --i) {
+                p *= a[i + 1];
+                res[i] *= p;
+            }
+            return res;
+        }
 };
 
 
