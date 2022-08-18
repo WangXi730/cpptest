@@ -1,0 +1,35 @@
+#pragma once
+#include<iostream>
+#include<vector>
+#include<algorithm>
+namespace wx{
+	//直接选择排序
+	void SelectSort(typename vector<int>::iterator left, typename vector<int>::iterator right ) {
+		for (int i = 0; i < right - left; ++i) {
+			//用def存储下界下标
+			int def = i;
+			for (int j = i + 1; j < right - left; ++j) {
+				if (*(left + def) > *(left + j)) {
+					def = j;
+				}
+			}
+			//下界应当排在前面
+			if (i != def) {
+				int tmp = *(left + def);
+				*(left + def) = *(left + i);
+				*(left + i) = tmp;
+			}
+		}
+	}
+
+	//堆排序
+	void HeapSort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		for (int i = 0; i < right - left; ++i) {
+			make_heap(left, right - i);
+			int tmp = *left;
+			*left = *(right - 1 - i);
+			*(right - 1 - i) = tmp;
+		}
+	}
+
+}
