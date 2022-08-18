@@ -1,0 +1,37 @@
+#pragma once
+#include<iostream>
+#include<vector>
+using namespace std;
+namespace wx {
+	//归并排序
+	void MergeSort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		if (right - left <= 1)
+			return;
+		//从中间继续划分，左右各自排序
+		vector<int>::iterator mid = left + (right - left) / 2;
+		MergeSort(left, mid);
+		MergeSort(mid, right);
+		//现在左右都排序完成，总体排序
+		vector<int>::iterator mid_r = mid;
+		vector<int>::iterator mid_l = mid - 1;
+		vector<int>::iterator right_t = right - 1;
+		vector<int>::iterator left_t = left;
+		vector<int> tmp;
+		while (left_t <= mid_l && mid_r <= right_t) {
+			if (*left_t < *mid_r)
+				tmp.push_back(*(left_t++));
+			else
+				tmp.push_back(*(mid_r++));
+		}
+		while (left_t <= mid_l)
+			tmp.push_back(*(left_t++));
+		while (mid_r <= right_t)
+			tmp.push_back(*(mid_r++));
+		//拷贝
+		mid = tmp.begin();
+		while (mid != tmp.end()) {
+			*(left++) = *(mid++);
+		}
+	}
+
+}
