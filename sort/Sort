@@ -1,0 +1,6 @@
+#pragma once
+#include"ExchangeSort"
+#include"InsertSort"
+#include"SelectSort"
+#include"MergeSort"
+#include"RadixSort"
