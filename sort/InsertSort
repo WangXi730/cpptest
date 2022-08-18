@@ -1,0 +1,133 @@
+#pragma once
+#include<iostream>
+#include<vector>
+using namespace std;
+namespace wx {
+
+	//普通插入排序
+	void Insertsort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		for (vector<int>::iterator i = left + 1; i < right; ++i) {
+			vector<int>::iterator k = left;
+			while (k < i && *k < *i) {
+				++k;
+			}
+			int tmp = *i;
+			for (vector<int>::iterator j = i; j > k; --j) {
+				*j = *(j - 1);
+			}
+			*k = tmp;
+		}
+	}
+	//插入排序——二分排序
+	void BinInsertsort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		for (vector<int>::iterator i = left + 1; i < right; ++i) {
+			vector<int>::iterator first = left;
+			vector<int>::iterator last = i - 1;
+			vector<int>::iterator tmp;
+			if (*last <= *i) {
+				continue;
+			}
+			else if (*first > *i) {
+				tmp = first;
+			}
+			else {
+				while (first < last) {
+					vector<int>::iterator mid = first + (last - first) / 2;
+					if (*mid == *i) {
+						first = mid + 1;
+						break;
+					}
+					else if (*mid > *i) {
+						last = mid;
+					}
+					else if (*mid < *i) {
+						first = mid + 1;
+					}
+				}
+				tmp = first;
+			}
+			int t = *i;
+			for (vector<int>::iterator j = i; j > tmp; --j) {
+				*j = *(j - 1);
+			}
+			*tmp = t;
+		}
+
+	}
+
+	//二路插入排序
+	void TwoWayInsertsort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		int n = right - left;
+		vector<int> tmp(n);
+		int first = 0;
+		int last = first;
+		tmp[first] = *left;
+		for (vector<int>::iterator i = left + 1; i < right; ++i) {
+			if (*i < tmp[first]) {
+				first = (first + n - 1) % n;
+				tmp[first] = *i;
+			}
+			else if (*i >= tmp[last]) {
+				last = (last + 1) % n;
+				tmp[last] = *i;
+			}
+			else {
+				for (int j = (first - 1) % n; j != last; j = (j + 1) % n) {
+					if (tmp[(j + 1) % n] < *i) {
+						tmp[j] = tmp[(j + 1) % n];
+					}
+					else {
+						tmp[j] = *i;
+						first = (first - 1 + n) % n;
+						break;
+					}
+				}
+			}
+		}
+		vector<int>::iterator it = left;
+		for (int i = first; it != right; i = (i + 1) % n) {
+			*it = tmp[i];
+			it += 1;
+		}
+
+	}
+
+	//希尔排序——最快的插入排序，最后一个参数为增量改变参数
+	void ShallInsertsort(typename vector<int>::iterator left, typename vector<int>::iterator right) {
+		if (right - left <= 1) {
+			return;
+		}
+		//一种很快的算法为增量序列	dlat[k] = 2^(t-k+1) - 1，t为总趟数，即k<=t
+		//根据以上公式，额外的，应当让增量维持在	dlat[1]<right-left	
+		//先求出第一趟的数值dlat[1]=2^t - 1，之后的每趟用数学归纳法算出
+		//增量用 变量gap 存储
+		int gap = 1;
+		while(gap * 2 - 1<right-left){
+			gap *= 2;
+		}
+		gap = gap - 1;
+		while (gap>=1) {
+			for (auto it = left + gap; it < right; ++it) {
+				if (*it >= *(it - gap)) {
+					continue;
+				}
+				else {
+					int tmp = *it;
+					auto it2 = it;
+					for (; (it2 - left) >= gap; it2 -= gap) {
+						if (tmp < *(it2 - gap)) {
+							*it2 = *(it2 - gap);
+						}
+						else {
+							break;
+						}
+					}
+					*it2 = tmp;
+				}
+			}
+			//最后改变增量
+			gap = (gap + 1) / 2 - 1;
+		}
+	}
+
+}
