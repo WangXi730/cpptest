@@ -1,5 +1,6 @@
 #include<iostream>
 #include<vector>
+#include<string>
 #include<stack>
 using namespace std;
 
@@ -40,8 +41,40 @@ public:
         //如果到最后都没找出来毛病，说明是二叉树的后续遍历
         return true;
     }
+//剑指 Offer 19. 正则表达式匹配
+public:
+    bool isMatch(string s, string p) {
+        vector<vector<bool>> dp(s.size() + 1, vector<bool>(p.size() + 1, false));
+        //初始化第一行
+        dp[0][0] = true;
+        for (int i = 1; i <= p.size(); ++i) {
+            if (p[i - 1] == '*') {
+                dp[0][i] = dp[0][i - 2];
+            }
+        }
+        for (int i = 1; i < dp.size(); ++i) {
+            for (int j = 1; j < dp[0].size(); ++j) {
+                if (s[i - 1] == p[j - 1] || p[j - 1] == '.') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (p[j - 1] != '.' && p[j - 1] != '*' && p[j - 1] != s[i - 1]) {
+                }
+                else if (p[j - 1] == '*') {
+                    if (s[i - 1] == p[j - 2] || p[j - 2] == '.') {
+                        dp[i][j] = dp[i][j - 2] || dp[i - 1][j];
+                    }
+                    else {
+                        dp[i][j] = dp[i][j - 2];
+                    }
+                }
+            }
+        }
+        return dp[s.size()][p.size()];
+    }
 };
 
 int main() {
+    Solution a;
+    a.isMatch("aa", "a*");
 	return 0;
 }
