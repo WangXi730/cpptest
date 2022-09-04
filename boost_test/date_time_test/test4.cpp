@@ -43,7 +43,22 @@ public:
 		boost::gregorian::date d1(year,12,31);
 		return d1.day_of_year();
 	}
-
+	//4、计算银行的免息还款日
+	struct credit_card{
+		std::string bank_name;//银行名
+		int bill_day_no;//记账日
+		//构造函数
+		credit_card(std::string name, int no): bank_name(name),bill_day_no(no){}
+	};
+	int calc_free_days(const credit_card &card, boost::gregorian::date consume_day = boost::gregorian::day_clock::local_day()){
+		//得到下一个记账日
+		boost::gregorian::date bdn(consume_day.year(),consume_day.month(),card.bill_day_no);
+		if(bdn < consume_day){
+			bdn += boost::gregorian::months(1);
+		}
+		boost::gregorian::days res = bdn - consume_day + boost::gregorian::days(20);
+		return res.days();
+	}
 };
 
 
@@ -54,5 +69,7 @@ int main(){
 	std::cout << "2022年9月有" << test.account_weekends(2022,9) << "个星期天" << std::endl;
 	std::cout << "2022年有" << test.days_of_year(2022) << "天" << std::endl;
 	std::cout << "2020年有" << test.days_of_year(2020) << "天" << std::endl;
+	Solution::credit_card card("back1",7);
+	std::cout << "今天借款（银行记账日为7号）的免息期为" << test.calc_free_days(card) << std::endl;
 	return 0;
 }
