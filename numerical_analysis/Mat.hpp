@@ -19,9 +19,9 @@ public:
 	Mat(const Mat& cp);
 //变换方法,transformation系列函数
 public:
-	//行变换：第i行乘k加到第j行，变换成功返回true，否则返回false
+	//行变换：第i行乘k加到第j行
 	void trans_row(int i, int j, double k);
-	//列变换：第i列乘k加到第j列，变换成功返回true，否则返回false
+	//列变换：第i列乘k加到第j列
 	void trans_col(int i, int j, double k);
 	//行变换：第i行乘k
 	void trans_row(int i, double k);
@@ -108,13 +108,13 @@ Mat::Mat(const Mat& cp){
 //行变换：第i行乘k加到第j行
 void Mat::trans_row(int i, int j, double k){
 	for(int it=0;it<col();++it){
-		_mat[i][it] += _mat[j][it]*k;
+		_mat[j][it] += _mat[i][it]*k;
 	}
 }
 //列变换：第i列乘k加到第j列
 void Mat::trans_col(int i, int j, double k){
 	for(int it=0;it<row();++it){
-		_mat[it][i] += _mat[it][j]*k;
+		_mat[it][j] += _mat[it][i]*k;
 	}
 }
 //行变换：第i行乘k
@@ -123,9 +123,9 @@ void Mat::trans_row(int i, double k){
 		_mat[i][it] *= k;
 	}
 }
-//列变换：第i行乘k
+//列变换：第i列乘k
 void Mat::trans_col(int i, double k){
-	for(int it=0;it<row();++i){
+	for(int it=0;it<row();++it){
 		_mat[it][i] *= k;
 	}
 }
@@ -181,20 +181,21 @@ Mat& Mat::operator+=(Mat& m){
 }
 //矩阵乘法
 Mat Mat::operator*(Mat& m){
-	Mat res(row(),col());
+	Mat res(row(),m.col());
 	for(int i=0;i<row();++i){
-		for(int j=0;j<col();++j){
-			res[i][j] = _mat[i][j] * m[i][j];
+		for(int j=0;j<m.col();++j){
+			//每一行对应每一列
+			for(int k=0;k<col();++k){
+				res[i][j] += _mat[i][k] * m[k][j];
+			}
 		}
 	}
 	return res;
 }
 Mat& Mat::operator*=(Mat& m){	
-	for(int i=0;i<row();++i){
-		for(int j=0;j<col();++j){
-			_mat[i][j] *= m[i][j];		
-		}
-	}
+	Mat tmp = (*this)*m;
+	swap(tmp);
+	return *this;
 }
 //矩阵数乘
 Mat Mat::operator*(double k){
@@ -338,7 +339,7 @@ Mat::operator double(){
 			//求出行变换的倍数
 			double k = -m[j][i]/m[i][i];
 			//行变换
-			trans_row(j,i,k);
+			trans_row(i,j,k);
 		}
 	}
 	//主元相乘即为结果
