@@ -67,6 +67,42 @@ public:
             }
             return res;
         }
+        vector<string> letterCombinations(string digits) {
+            vector<string> vs = { "","","abc","def","ghi","jkl","pqrs","tuv","wxyz" };
+            int res_size = 1;
+            int str_size = 0;
+            for (char& c : digits) {
+                if (c == '1');
+                else if (c == '7' || c == '9') {
+                    res_size *= 4;
+                    str_size += 1;
+                }
+                else {
+                    res_size *= 3;
+                    str_size += 1;
+                }
+            }
+            vector<string> res(res_size, string(str_size, ' '));
+            for (int j = 0; j < str_size; ++j) {
+                //第j次循环补充每个字符串的第j个字符
+                if (digits[j] == '1') {
+                    --j;
+                }
+                else if (digits[j] == '7' || digits[j] == '9') {
+                    res_size /= 4;
+                    for (int i = 0; i < res.size(); ++i) {
+                        res[i][j] = vs[(int)digits[j] - (int)'0'][i / res_size % 4];
+                    }
+                }
+                else {
+                    res_size /= 3;
+                    for (int i = 0; i < res.size(); ++i) {
+                        res[i][j] = vs[(int)digits[j] - (int)'0'][i / res_size % 3];
+                    }
+                }
+            }
+            return res;
+        }
 };
 
 
@@ -74,7 +110,8 @@ int main() {
     Solution a;
     //vector<int>  t = { -2, 0, 1, 1, 2};
     //a.threeSum(t);
-    vector<int> t = {4, 0, 5, -5, 3, 3, 0, -4, -5};
-    a.threeSumClosest(t, -2);
+    //vector<int> t = {4, 0, 5, -5, 3, 3, 0, -4, -5};
+    //a.threeSumClosest(t, -2);
+    a.letterCombinations("23");
     return 0;
 }
