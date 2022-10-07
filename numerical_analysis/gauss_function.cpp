@@ -64,7 +64,7 @@ Mat Gauss(Mat A, std::vector<double> b){
 		A.trans_row(i,t);
 		A[i][k] = 1;
 		//右端向量做相同的事情
-		b[i] /= t;
+		b[i] *= t;
 		//print(A,b,X);
 		//回代
 		for(j=i-1;j>=0;--j){
@@ -80,6 +80,7 @@ Mat Gauss(Mat A, std::vector<double> b){
 	double t = 1/A[0][0];
 	A.trans_row(0,t);
 	A[0][0] = 1;
+	b[0] *= t;
 	//print(A,b,X);
 	//接下来判断是否无解
 	//如果右端向量的相应位置的数字不为0，且A在这一行的数字全为0，那么无解
@@ -139,9 +140,9 @@ void print(Mat A, std::vector<double> b, Mat X){
 //测试
 int main(){
 	//构造一个矩阵
-	Mat A = {{1,2,3},{4,5,6},{7,8,9}};
+	Mat A = {{1,2,1,4},{2,0,4,3},{4,2,2,1},{-3,1,3,2}};
 	//构造右端向量
-	std::vector<double> b = {10,20,30};
+	std::vector<double> b = {13,28,20,6};
 	//运算
 	Mat X = Gauss(A,b);
 	//打印

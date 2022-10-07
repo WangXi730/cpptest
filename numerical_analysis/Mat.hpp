@@ -194,6 +194,7 @@ Mat& Mat::operator+=(Mat& m){
 			_mat[i][j] += m[i][j];
 		}
 	}
+	return *this;
 }
 //矩阵乘法
 Mat Mat::operator*(Mat& m){
@@ -229,6 +230,7 @@ Mat& Mat::operator*=(double k){
 			_mat[i][j] *= k;
 		}
 	}
+	return *this;
 }
 //矩阵乘向量，如果是方阵，默认v为列向量
 std::vector<double> Mat::operator*(std::vector<double>& v){
