@@ -10,7 +10,7 @@ std::vector<double> Hermite3(std::vector<double> x, std::vector<double> y, std::
 	std::vector<double> f(4);
 	double h = x[2] - x[1];
 	f[3] = 2*(y[0]-y[1])/(h*h*h) + (y1[0]+y1[1])/(h*h);
-	f[2] = (x[1]-3*x[0])*y[0]-4*x[1]*y[0]+(3*x[1]-x[0])*y[1]+4*x[0]*y[1])/(h*h*h)+((-x[0]-2*x[1])*y1[0]+(-x[1]-2*x[0])*y1[1])/(h*h);
+	f[2] = ((x[1]-3*x[0])*y[0]-4*x[1]*y[0]+(3*x[1]-x[0])*y[1]+4*x[0]*y[1])/(h*h*h)+((-x[0]-2*x[1])*y1[0]+(-x[1]-2*x[0])*y1[1])/(h*h);
 	f[1] = (y[0]*(2*x[1]*x[1])-2*(x[1]-3*x[0])*x[1])+y[1]*(-2*x[0]*x[0]-2*x[0]*(3*x[1]-x[0]))/(h*h*h)+(y1[0]*(x[1]*x[1]+2*x[0]*x[1])+y1[1]*(x[0]*x[0]+2*x[0]*x[1]))/(h*h);
 	f[0] = (y[0]*x[1]*x[1]*(x[1]-3*x[0])+y[1]*x[0]*x[0]*(3*x[1]-x[0]))/(h*h*h) + (-x[0]*x[1]*x[1]*y1[0]-x[1]*x[0]*x[0]*y1[1])/(h*h);
 	return f;
@@ -38,13 +38,13 @@ Mat Three_corner_method(std::vector<double> x, std::vector<double> y0, std::vect
 	for(int i=1;i<row-2-1;++i){
 		A[i][i-1] = x[i+2]/(x[i+1]+x[i+2]);
 	    A[i][i+1] = x[i+1]/x[i+1]+x[i+2];
-	   	g[i][0] = 3*(x[i+2]/(x[i+1]+x[i+2])*(y0[i+1]-y0[i])/(x0[i+1]-x0[i])+x[i+1]/(x[i+1]+x[i+2])*(y0[i+2]-y0[i+1])/(x[i+2]-x[i+1]));
+	   	g[i][0] = 3*(x[i+2]/(x[i+1]+x[i+2])*(y0[i+1]-y0[i])/(x[i+1]-x[i])+x[i+1]/(x[i+1]+x[i+2])*(y0[i+2]-y0[i+1])/(x[i+2]-x[i+1]));
 	}
 	// 计算给出m
 	Mat tmp = A.inv()*g;
 	std::vector<double> m;
 	m.push_back(y1[0]);
-	for(int i=0;i<g.size();++i){
+	for(int i=0;i<g.row();++i){
 		m.push_back(tmp[i][0]);
 	}
 	m.push_back(y1[1]);
@@ -52,12 +52,9 @@ Mat Three_corner_method(std::vector<double> x, std::vector<double> y0, std::vect
 	Mat f(row-1,4);
 	for(int i=0;i<row-1;++i){
 		//先将参数组织好
-		std::vector<std::vector<double>> arg = {x[i],x[i+1]};
-		Mat arg1(arg);
-		arg = {y0[i],y0[i+1]};
-		Mat arg2(arg);
-		arg = {m[i],m[i+1]};
-		Mat arg3(arg);
+		std::vector<double> arg1 = {x[i],x[i+1]};
+		std::vector<double> arg2 = {y0[i],y0[i+1]};
+		std::vector<double> arg3 = {m[i],m[i+1]};
 		f[i] = Hermite3(arg1,arg2,arg3);
 	}
 	return f;
@@ -65,5 +62,10 @@ Mat Three_corner_method(std::vector<double> x, std::vector<double> y0, std::vect
 
 
 int main(){
+	std::vector<double> x = {-1,0,1,2};
+	std::vector<double> y0 = {-1,0,1,0};
+	std::vector<double> y1 = {0,1};
+	Mat m = Three_corner_method(x,y0,y1);
+	std::cout << m << std::endl;
 	return 0;
 }

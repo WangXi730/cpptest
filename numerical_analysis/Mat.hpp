@@ -40,25 +40,25 @@ public:
 //矩阵运算
 public:
 	//矩阵加法
-	Mat operator+(Mat& m);
-	Mat& operator+=(Mat& m);
+	Mat operator+(Mat m);
+	Mat& operator+=(Mat m);
 	//矩阵乘法
-	Mat operator*(Mat& m);
-	Mat& operator*=(Mat& m);
+	Mat operator*(Mat m);
+	Mat& operator*=(Mat m);
 	//矩阵数乘
 	Mat operator*(double k);
 	Mat& operator*=(double k);
 	//矩阵乘向量，如果是方阵，默认v为列向量
-	std::vector<double> operator*(std::vector<double>& v);
+	std::vector<double> operator*(std::vector<double> v);
 	//矩阵除法（乘逆）
-	Mat operator/(Mat& m);
-	Mat& operator/=(Mat& m);
+	Mat operator/(Mat m);
+	Mat& operator/=(Mat m);
 	//矩阵求逆
 	Mat inv();
 	//矩阵变乘逆
 	Mat& be_inv();
 	//矩阵的行列式
-	operator double();
+	double get_val();
 	//矩阵的Doolittle三角分解
 	void Doolittle(Mat& L,Mat& U);
 	//增广操作
@@ -179,7 +179,7 @@ Mat& Mat::be_trans(){
 
 //矩阵运算
 //矩阵加法
-Mat Mat::operator+(Mat& m){
+Mat Mat::operator+(Mat m){
 	Mat res(row(),col());
 	for(int i=0;i<row();++i){
 		for(int j=0;j<col();++j){
@@ -188,7 +188,7 @@ Mat Mat::operator+(Mat& m){
 	}
 	return res;
 }
-Mat& Mat::operator+=(Mat& m){
+Mat& Mat::operator+=(Mat m){
 	for(int i=0;i<row();++i){
 		for(int j=0;j<col();++j){
 			_mat[i][j] += m[i][j];
@@ -197,7 +197,7 @@ Mat& Mat::operator+=(Mat& m){
 	return *this;
 }
 //矩阵乘法
-Mat Mat::operator*(Mat& m){
+Mat Mat::operator*(Mat m){
 	Mat res(row(),m.col());
 	for(int i=0;i<row();++i){
 		for(int j=0;j<m.col();++j){
@@ -209,7 +209,7 @@ Mat Mat::operator*(Mat& m){
 	}
 	return res;
 }
-Mat& Mat::operator*=(Mat& m){	
+Mat& Mat::operator*=(Mat m){	
 	Mat tmp = (*this)*m;
 	swap(tmp);
 	return *this;
@@ -233,7 +233,7 @@ Mat& Mat::operator*=(double k){
 	return *this;
 }
 //矩阵乘向量，如果是方阵，默认v为列向量
-std::vector<double> Mat::operator*(std::vector<double>& v){
+std::vector<double> Mat::operator*(std::vector<double> v){
 	if(v.size()==col()){
 		std::vector<double> res(row(),0.0);
 		for(int i=0;i<row();++i){
@@ -255,10 +255,12 @@ std::vector<double> Mat::operator*(std::vector<double>& v){
 	return std::vector<double>();
 }
 //矩阵除法（乘逆）
-Mat Mat::operator/(Mat& m){
-	return (*this)*m.inv();
+Mat Mat::operator/(Mat m){
+	Mat res = (*this);
+	Mat mm = m.inv();
+	return res;
 }
-Mat& Mat::operator/=(Mat& m){
+Mat& Mat::operator/=(Mat m){
 	Mat res = (*this)/m;
 	swap(res);
 	return (*this);
@@ -330,7 +332,7 @@ void Mat::Doolittle(Mat& L, Mat& U){
 	}
 }
 //求行列式
-Mat::operator double(){	
+double Mat::get_val(){	
 	//首先复制一个等价矩阵，以此来保证原矩阵不改变
 	Mat m = (*this);
 	//通过列主元变换，将矩阵变成下三角矩阵

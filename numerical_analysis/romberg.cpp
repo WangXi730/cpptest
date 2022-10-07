@@ -3,7 +3,7 @@
 using namespace std;
 double fun(double x)
 {
-    return sin(x) / x;
+    return pow(x,2) + x;
 }
 double romberg(double a, double b, double(*f)(double), double eps) {
     double T1, T2, S1, S2, C1, C2, R1, R2, S, x;

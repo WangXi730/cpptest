@@ -47,8 +47,6 @@ std::vector<double> Ols(std::vector<double> x, std::vector<double> y,std::vector
 	f = A.inv()*b;
 	return f;
 }
-
-
 	
 int main(){
 	//测试

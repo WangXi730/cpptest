@@ -15,6 +15,9 @@ std::vector<double> Newtow(std::vector<double> &x0, double e, function1_t F, fun
 	while(1){
 		std::vector<double> xi;
 		xi = (J(x[i]).inv() * F(x[i]).trans()).trans()[0];
+		for (int j = 0; j < x[i].size(); ++j) {
+			xi[j] = x[i][j] - xi[j];
+		}
    	    x.push_row(xi);
     	i += 1;
 	    //判断误差是否小于0.001
