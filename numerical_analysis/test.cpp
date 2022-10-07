@@ -17,6 +17,10 @@ int main(){
 	Mat mat1cp = mat1;
 	std::cout << "拷贝构造单位阵：" << std::endl;
 	std::cout << mat1cp << std::endl;
+	//列表构造
+	Mat mat1list = {{1,0,0},{0,1,0},{0,0,1}};
+	std::cout << "列表构造单位阵：" << std::endl;
+	std::cout << mat1list << std::endl;
 	//变换
 	std::cout << "行变换：第1行乘3加到第2行" << std::endl;
 	mat1.trans_row(1,2,3.0);

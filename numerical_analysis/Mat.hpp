@@ -17,6 +17,8 @@ public:
 	Mat(std::vector<std::vector<double>>& m);
 	//拷贝构造
 	Mat(const Mat& cp);
+	//通过列表构造
+	Mat(const std::initializer_list<std::initializer_list<double>>& l);
 //变换方法,transformation系列函数
 public:
 	//行变换：第i行乘k加到第j行
@@ -59,6 +61,11 @@ public:
 	operator double();
 	//矩阵的Doolittle三角分解
 	void Doolittle(Mat& L,Mat& U);
+	//增广操作
+	//增广一行
+	bool push_row(std::vector<double>& v);
+	//增广一列
+	bool push_col(std::vector<double>& v);
 public:
 //访问操作，返回第i行
 	std::vector<double>& operator[](int i);
@@ -103,7 +110,16 @@ Mat::Mat(std::vector<std::vector<double>>& m){
 Mat::Mat(const Mat& cp){
 	_mat = cp._mat;
 }
-
+//通过列表构造
+Mat::Mat(const std::initializer_list<std::initializer_list<double>>& l){
+	std::vector<std::vector<double>> v;
+	for(auto&e:l){
+		std::vector<double> tmp(e);
+		v.push_back(tmp);
+	}
+	Mat tmp(v);
+	swap(tmp);
+}
 //变换方法
 //行变换：第i行乘k加到第j行
 void Mat::trans_row(int i, int j, double k){
@@ -374,4 +390,23 @@ std::ostream&  operator <<(std::ostream& out, Mat& c){
 		out << std::endl;
 	}
 	return out;
+}
+//增广操作
+//增广一行
+bool Mat::push_row(std::vector<double>& v){
+	if(v.size() != col()){
+		return false;
+	}
+	_mat.push_back(v);
+	return true;
+}
+//增广一列
+bool Mat::push_col(std::vector<double>& v){
+	if(v.size() != row()){
+		return false;
+	}
+	for(int i=0;i<v.size();++i){
+		_mat[i].push_back(v[i]);
+	}
+	return true;
 }
