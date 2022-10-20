@@ -3,7 +3,15 @@
 #include<map>
 #include<vector>
 using namespace std;
-
+void print_mat(vector<vector<char>>& board) {
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            cout << board[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 class Solution {
 public:
     int search(vector<int>& nums, int target) {
@@ -181,72 +189,114 @@ public:
                 ++erase_num;
             }
         }
-        //不断填写
-        int min_num = 1;
-        while (erase_num!=81) {
-            int min_this = 999;
-            bool need = true;
-            for (int i = 0; i < 9; ++i) {
-                if (row[i].empty()) {
+        while (erase_num < 81) {
+            easy_fill(board, erase_num, row, col, box);
+            print_mat(board);
+            fill(board, erase_num, row, col, box);
+            print_mat(board);
+        }
+    }
+    void easy_fill(vector<vector<char>>& board, int& erase_num, vector<set<char>>& row, vector<set<char>>& col, vector<set<char>>& box) {
+        for (int i = 0; i < 9; ++i) {
+            if (row[i].empty()) {
+                continue;
+            }
+            for (int j = 0; j < 9; ++j) {
+                if (col[j].empty()) {
                     continue;
                 }
-                for (int j = 0; j < 9; ++j) {
-                    if (col[j].empty()) {
-                        continue;
+                if (board[i][j] == '.') {
+                    if (row[i].size() == 1) {
+                        board[i][j] = *(row[i].begin());
                     }
-                    if (board[i][j] == '.') {
-                        if (row[i].size() == 1) {
-                            board[i][j] = *(row[i].begin());
-                        }
-                        else if (col[j].size() == 1) {
-                            board[i][j] = *(col[j].begin());
-                        }
-                        else if (box[i / 3 * 3 + j / 3].size() == 1) {
-                            board[i][j] = *(box[i / 3 * 3 + j / 3].begin());
-                        }
-                        else {
-                            //查找相同的
-                            set<char> st;
-                            for (auto& e : row[i]) {
-                                if (col[j].find(e) != col[j].end() && box[i / 3 * 3 + j / 3].find(e) != box[i / 3 * 3 + j / 3].end()) {
-                                    st.insert(e);
+                    else if (col[j].size() == 1) {
+                        board[i][j] = *(col[j].begin());
+                    }
+                    else if (box[i / 3 * 3 + j / 3].size() == 1) {
+                        board[i][j] = *(box[i / 3 * 3 + j / 3].begin());
+                    }
+                    else {
+                        //查找相同的
+                        set<char> st;
+                        for (auto& e : row[i]) {
+                            if (col[j].find(e) != col[j].end() && box[i / 3 * 3 + j / 3].find(e) != box[i / 3 * 3 + j / 3].end()) {
+                                st.insert(e);
+                                if (st.size() > 1) {
+                                    break;
                                 }
                             }
-                            if (st.size() == min_num) {
-                                board[i][j] = *(st.begin());
-                                min_num = 1;
-                                need = false;
-                            }
-                            else {
-                                min_this = min_this > st.size() ? st.size() : min_this;
-                            }
                         }
-                        if (board[i][j] != '.') {
-                            //删除
-                            char c = board[i][j];
-                            row[i].erase(c);
-                            col[j].erase(c);
-                            box[i / 3 * 3 + j / 3].erase(c);
-                            i = -1;
-                            ++erase_num;
-                            break;
+                        if (st.size() == 1) {
+                            board[i][j] = *(st.begin());
                         }
+                    }
+                    if (board[i][j] != '.') {
+                        //删除
+                        char c = board[i][j];
+                        row[i].erase(c);
+                        col[j].erase(c);
+                        box[i / 3 * 3 + j / 3].erase(c);
+                        i = -1;
+                        ++erase_num;
+                        break;
                     }
                 }
             }
-            if (need) {
-                min_num = min_this;
+        }
+    }
+    void fill(vector<vector<char>>& board, int& erase_num, vector<set<char>>& row, vector<set<char>>& col, vector<set<char>>& box) {
+        if (erase_num >= 81) {
+            return;
+        }
+        //查找每一个box
+        for (int pos_box = 0; pos_box < 9; ++pos_box) {
+            //获取该九宫格的左上角的下标
+            int row_begin = pos_box / 3 * 3;
+            int col_begin = pos_box % 3 * 3;
+            for (const char& c : box[pos_box]) {
+                int count = 0;
+                for (int i = row_begin; i < row_begin + 3; ++i) {
+                    if (row[i].find(c) == row[i].end() || count > 1) {
+                        continue;
+                    }
+                    for (int j = col_begin; j < col_begin + 3; ++j) {
+                        //这一格的行、列、九宫格剩余数字的交集
+                        if (col[j].find(c) != col[j].end()) {
+                            ++count;
+                        }
+                    }
+                }
+                if (count == 1) {
+                    for (int i = row_begin; i < row_begin + 3; ++i) {
+                        if (row[i].find(c) == row[i].end()) {
+                            continue;
+                        }
+                        for (int j = col_begin; j < col_begin + 3; ++j) {
+                            if (col[j].find(c) != col[j].end()) {
+                                //找到了！
+                                //删除并返回
+                                board[i][j] = c;
+                                row[i].erase(c);
+                                col[j].erase(c);
+                                box[pos_box].erase(c);
+                                ++erase_num;
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 };
 
 
+
 int main() {
     //vector<int> a { 5, 7, 7, 8, 8, 10 };
     Solution test;
     //test.searchRange(a, 8);
-    vector<vector<char>> board = { {'5','3','.','.','7','.','.','.','.'},{'6','.','.','1','9','5','.','.','.'},{'.','9','8','.','.','.','.','6','.'},{'8','.','.','.','6','.','.','.','3'},{'4','.','.','8','.','3','.','.','1'},{'7','.','.','.','2','.','.','.','6'},{'.','6','.','.','.','.','2','8','.'},{'.','.','.','4','1','9','.','.','5'},{'.','.','.','.','8','.','.','7','9'} };
+    vector<vector<char>> board = { {'.','.','9','7','4','8','.','.','.'},{'7','.','.','.','.','.','.','.','.'},{'.','2','.','1','.','9','.','.','.'},{'.','.','7','.','.','.','2','4','.'},{'.','6','4','.','1','.','5','9','.'},{'.','9','8','.','.','.','3','.','.'},{'.','.','.','8','.','3','.','2','.'},{'.','.','.','.','.','.','.','.','6'},{'.','.','.','2','7','5','9','.','.'} };
     //test.isValidSudoku(board);
     test.solveSudoku(board);
     vector<vector<string>> sv{ {"6", "3", "9", "7", "4", "8", "1", "5", "2"},{"7", "4", "1", "6", "5", "2", "8", "3", "9"},{"8", "2", "5", "1", "3", "9", "6", "7", "4"},{"3", "5", "7", "9", "8", "6", "2", "4", "1"},{"2", "6", "4", "3", "1", "7", "5", "9", "8"},{"1", "9", "8", "5", "2", "4", "3", "6", "7"},{"9", "7", "1", "8", "6", "3", "4", "2", "5"},{"5", "8", "2", "4", "9", "1", "7", "1", "6"},{"4", "1", "6", "2", "7", "5", "9", "8", "3"} };
