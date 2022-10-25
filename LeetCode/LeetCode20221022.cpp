@@ -1,6 +1,8 @@
 #include<iostream>
 #include<string>
 #include<vector>
+#include<map>
+#include<algorithm>
 using namespace std;
 class Solution {
 public:
@@ -45,6 +47,79 @@ public:
         }
         return dp[nums.size() - 1];
     }
+    //47. 全排列 II
+public:
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        vector<vector<int>> res;
+        sort(nums.begin(),nums.end());
+        vector<bool> used(nums.size(), false);
+        vector<int> tmp(nums.size(), 0);
+        func(used, nums, tmp, res, 0);
+        return res;
+
+    }
+    void func(vector<bool>& used, vector<int>& nums, vector<int>& tmp, vector<vector<int>>& res, int i) {
+        //递归退出条件
+        if (i == used.size()) {
+            res.push_back(tmp);
+            return;
+        }
+        for (int j = 0; j < nums.size(); ++j) {
+            //第j个元素没有被使用，那么就可以让这个元素填入i位置
+            if (j && nums[j] == nums[j - 1] && !used[j-1]) {
+                continue;
+            }
+            if (!used[j]) {
+                used[j] = true;
+                tmp[i] = nums[j];
+                //递归
+                func(used, nums, tmp, res, i + 1);
+                //回溯
+                used[j] = false;
+            }
+        }
+    }
+    void rotate(vector<vector<int>>& matrix) {
+        //固定值i代表层
+        for (int i = 0; i < matrix.size() / 2; ++i) {
+            //偏移量j
+            for (int j = 0; i + j < matrix[0].size() - i - 1; ++j) {
+                int tmp = matrix[i][i + j];
+                matrix[i][i + j] = matrix[matrix.size() - 1 - i - j][i];
+                matrix[matrix.size() - 1 - i - j][i] = matrix[matrix.size() - 1 - i][matrix.size() - 1 - i - j];
+                matrix[matrix.size() - 1 - i][matrix.size() - 1 - i - j] = matrix[i + j][matrix.size() - 1 - i];
+                matrix[i + j][matrix.size() - 1 - i] = tmp;
+            }
+        }
+    }
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        map<map<char, int>, vector<string>> mp;
+        for (int i = 0; i < strs.size(); ++i) {
+            map<char, int> tmp;
+            int str_size = strs[i].size();
+            for (int j = 0; j < str_size; ++j) {
+                ++tmp[strs[i][j]];
+            }
+            mp[tmp].push_back(strs[i]);
+        }
+        vector<vector<string>> res;
+        for (auto& e : mp) {
+            res.push_back(e.second);
+        }
+        return res;
+
+    }
+    double myPow(double x, int n) {
+        if (n < 0) {
+            n = -n;
+            x = 1 / x;
+        }
+        double res = 1;
+        while (n--) {
+            res *= x;
+        }
+        return res;
+    }
 };
 
 
@@ -52,7 +127,10 @@ public:
 int main() {
     Solution test;
     //test.isMatch("abefcdgiescdfimde", "ab*cd?i*de");
-    vector<int> tmp{ 2, 3, 1, 1, 4 };
-    test.jump(tmp);
+    //vector<int> tmp{ 1,1,2 };
+    //test.permuteUnique(tmp);
+    //vector<vector<int>> v{ {1,2,3},{4,5,6},{7,8,9} };
+    //test.rotate(v);
+    test.myPow(2.0, 10);
     return 0;
 }
