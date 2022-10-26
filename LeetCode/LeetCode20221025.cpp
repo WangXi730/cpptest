@@ -1,6 +1,7 @@
 #include<iostream>
 #include<string>
 #include<algorithm>
+#include<vector>
 using namespace std;
 
 class Solution {
@@ -72,12 +73,67 @@ public:
         reverse(a.begin(), a.end());
         return a;
     }
+    vector<string> fullJustify(vector<string>& words, int maxWidth) {
+        vector<vector<string>> rows;
+        int char_size = 0;
+        vector<string> row;
+        for (int i = 0; i < words.size(); ++i) {
+            if (char_size + words[i].size() > maxWidth) {
+                rows.push_back(row);
+                vector<string> tmp;
+                row.swap(tmp);
+                char_size = 0;
+            }
+            row.push_back(words[i]);
+            char_size += words[i].size()+1;
+        }
+        rows.push_back(row);
+        vector<string> res;
+        for (int i = 0; i < rows.size()-1; ++i) {
+            string tmp(maxWidth, ' ');
+            int tmp_sz = 0;
+            for (int j = 0; j < rows[i].size(); ++j) {
+                tmp_sz += rows[i][j].size();
+            }
+            if (rows[i].size() == 1) {
+                memcpy(&tmp[0], &rows[i][0][0], rows[i][0].size());
+                res.push_back(tmp);
+                continue;
+            }
+            int block_sz = (maxWidth - tmp_sz) / (rows[i].size() - 1);
+            int mod = (maxWidth - tmp_sz) % (rows[i].size() - 1);
+            int k = 0;
+            int ki = 0;
+            for (int j = 0; j < maxWidth; ++j) {
+                tmp[j] = rows[i][k][ki++];
+                if (ki == rows[i][k].size()) {
+                    ki = 0;
+                    ++k;
+                    j += block_sz;
+                    if (--mod >= 0) {
+                        ++j;
+                    }
+                }
+            }
+            res.push_back(tmp);
+        }
+        string tmp(maxWidth, ' ');
+        int idx = 0;
+        for (int i = 0; i < rows[rows.size()-1].size(); ++i) {
+            memcpy(&tmp[idx], &rows[rows.size() - 1][i][0], rows[rows.size() - 1][i].size());
+            idx += rows[rows.size() - 1][i].size() + 1;
+        }
+        res.push_back(tmp);
+        return res;
+    }
 };
 
 
 int main() {
     Solution test;
     //test.isNumber("+.1");
-    test.addBinary("1010", "1011");
+    //test.addBinary("1010", "1011");
+    vector<string> v{ "This", "is", "an", "example", "of", "text", "justification." };
+    test.fullJustify(v, 16);
     return 0;
 }
