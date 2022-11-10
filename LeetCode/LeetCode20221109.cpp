@@ -108,108 +108,122 @@ public:
 //    }
 public:
     vector<vector<string>> findLadders(string beginWord, string endWord, vector<string>& wordList) {
-        //先遍历一次，如果wordList不存在endWord，直接返回即可
-        int appear = -1;
+        //先检查一遍，如果wordList中不存在endWord，直接返回即可
+        int end_idx = -1;
         for (int i = 0; i < wordList.size(); ++i) {
             if (wordList[i] == endWord) {
-                appear = i;
+                end_idx = i;
                 break;
             }
         }
-        if (appear == -1) {
+        if (end_idx == -1) {
             return {};
         }
-        //标记每一个单词被使用的阶段,-1表示没有被使用
-        vector<int> road(wordList.size(), -1);
-        //标志完成
-        bool finish = false;
-        //阶段
-        //单独进行一阶段的搜索
-        for (int j = 0; j < road.size(); ++j) {
-            if (only_dif(wordList[j], beginWord)) {
-                road[j] = 0;//第0阶段的值       
-                if (endWord == wordList[j]) {
-                    finish = true;
+        //最终结果，之所以采用这种手段，是因为数字比较相对字符串比较容易
+        vector<pair<vector<string>, int>> res(1, { {beginWord },-1});
+        //收录每一个阶段的单词每个单词最多被收录一次
+        vector<bool> used(wordList.size(), false);
+        size_t used_count = 0;
+        size_t used_size = wordList.size();
+        //开始收录
+        int t = 0;//收录阶段
+        //那么，优化以后，就只能通过手动来进行第一次的收录了
+        //预先分配空间，就可以免去总是回溯的过程
+        bool end = false;
+        vector<pair<vector<string>, int>> tmp0(move(res));
+        for (int j = 0; j < tmp0.size(); ++j) {
+            tmp0[j].first.push_back("");
+        }
+        //遍历单词列表
+        for (int i = 0; i < wordList.size(); ++i) {
+            //如果这个单词在之前阶段被使用过，就意味着之后不能使用了
+            if (used[i]) {
+                continue;
+            }
+            //遍历tmp，看看哪些单词在这个行列
+            for (int j = 0; j < tmp0.size(); ++j) {
+                if (only_dif(tmp0[j].first[t],wordList[i])) {
+                    used[i] = true;
+                    tmp0[j].first[t + 1] = wordList[i];
+                    tmp0[j].second = i;//代表最后一个单词下标是i
+                    res.push_back(tmp0[j]);
                 }
             }
         }
-        int i = 0;//i为前一个阶段
-
-        while (!finish) {
-            for (int j = 0; j < road.size(); ++j) {
-                if (road[j] == i) {
-                    //遍历其他没有使用过的数字
-                    string this_word = wordList[j];
-                    for (int k = 0; k < road.size(); ++k) {
-                        if (road[k] == -1 && only_dif(this_word, wordList[k])) {
-                            road[k] = i + 1;
-                            if (endWord == wordList[k]) {
-                                finish = true;
-                            }
+        //本轮结束，t自增
+        ++t;
+        if (res.empty()) {
+            //探索失败
+            return {};
+        }
+        vector<bool> pre_used = used;
+        while (used_count < used_size) {
+            if (end) {
+                //到达终点
+                break;
+            }
+            vector<pair<vector<string>, int>> tmp(move(res));
+            //预先分配空间，就可以免去总是回溯的过程
+            for (int j = 0; j < tmp.size(); ++j) {
+                tmp[j].first.push_back("");
+            }
+            vector<bool> new_pre_used(used_size,false);
+            //遍历单词列表
+            for (int i = 0; i < wordList.size(); ++i) {
+                //如果这个单词在之前阶段被使用过，就意味着之后不能使用了
+                if (used[i]) {
+                    continue;
+                }
+                //this_used里装的是pre中收录，且这次可以匹配的单词下标
+                vector<bool> this_used(used_size,false);
+                //遍历单词列表，查看哪个单词是这一次可以收录的
+                for (int j = 0; j < wordList.size(); ++j) {
+                    //如果不是上次收录的，那么就没必要判断
+                    if (!pre_used[j]) {
+                        continue;
+                    }
+                    if (only_dif(wordList[i], wordList[j])) {
+                        this_used[j] = true;
+                        //如果endWord被收录，那么代表最短的路径已完成收录，本轮结束就可以返回了
+                        if (end_idx == i) {
+                            end = true;
+                        }
+                        //收录成功，那么被标记点加一
+                        if (!used[i]) {
+                            ++used_count;
+                            used[i] = true;
                         }
                     }
                 }
+                //遍历tmp，看看哪些单词在这个行列
+                for (int j = 0; j < tmp.size(); ++j) {
+                    //如果最后一个单词在收录名单，收录
+                    if (this_used[tmp[j].second]) {
+                        tmp[j].first[t + 1] = wordList[i];
+                        res.push_back(tmp[j]);
+                        res[res.size() - 1].second = i;//代表最后一个单词下标是i
+                        new_pre_used[i] = true;//这一次被收录的单词
+                    }
+                }
             }
-            ++i;
-            if (i > road.size()) {
+            //本轮结束，t自增
+            ++t;
+            if (res.empty()) {
+                //探索失败
                 return {};
             }
+            pre_used.swap(new_pre_used);
         }
-        //现在，所有的最短的可能性都已经得到了保存，对所有的变化进行还原
-        if (road[appear] == -1) {
-            return {};
-        }
-        //反方向走一遍
-        vector<vector<string>> res;
-        vector<vector<string>> v(i+1);
-        vector<bool> valuable(road.size(),false);//选出有价值的结点
-        valuable[appear] = true;
-        while (i > 0) {
-            for (int j = 0; j < wordList.size(); ++j) {
-                if (road[j] == i) {
-                    string s = wordList[j];
-                    for (int k = 0; k < wordList.size(); ++k) {
-                        if (road[k] == i - 1 && only_dif(wordList[k], s)) {
-                            valuable[k] = true;
-                        }
-                        
-                    }
-                }
-            }
-            --i;
-        }
-        for (int j = 0; j < valuable.size(); ++j) {
-            if (!valuable[j]) {
-                road[j] = -2;
+        //去除所有没有到达终点的路径
+        vector<vector<string>> result;
+        for (int i = 0; i < res.size(); ++i) {
+            if (res[i].second == end_idx) {
+                result.push_back(res[i].first);
             }
         }
-        //将每一步可能的结果收录
-        for (int i = 0; i < road.size(); ++i) {
-            if (road[i] != -1 && road[i] != -2) {
-                v[road[i]].push_back(wordList[i]);
-            }
-        }
-        vector<string> tmp(1, beginWord);
-        //dfs求笛卡尔积
-        dfs(res, tmp, v);
-        return res;
+        return result;
     }
 private:
-    void dfs(vector<vector<string>>& res, vector<string>& tmp, vector<vector<string>>& v) {
-        if (tmp.size() > v.size()) {
-            res.push_back(tmp);
-            return;
-        }
-        int n = tmp.size() - 1;
-        for (int i = 0; i < v[n].size(); ++i) {
-            if (only_dif(tmp[n], v[n][i])) {
-                tmp.push_back(v[n][i]);
-                dfs(res, tmp, v);
-                //回溯
-                tmp.pop_back();
-            }
-        }
-    }
     //计算两个单词不同的字母的个数是否是1
     bool only_dif(string& s1, string& s2) {
         bool count = true;
@@ -231,9 +245,9 @@ int main() {
     //string s = "A man, a plan, a canal: Panama";
     Solution test;
     //test.isPalindrome("0P");
-    vector<string> v{ "hot", "dog" };
-    test.findLadders("hot"
-        ,"dog",
-        v);
+    vector<string> v{ "aaaaa","caaaa","cbaaa","daaaa","dbaaa","eaaaa","ebaaa","faaaa","fbaaa","gaaaa","gbaaa","haaaa","hbaaa","iaaaa","ibaaa","jaaaa","jbaaa","kaaaa","kbaaa","laaaa","lbaaa","maaaa","mbaaa","naaaa","nbaaa","oaaaa","obaaa","paaaa","pbaaa","bbaaa","bbcaa","bbcba","bbdaa","bbdba","bbeaa","bbeba","bbfaa","bbfba","bbgaa","bbgba","bbhaa","bbhba","bbiaa","bbiba","bbjaa","bbjba","bbkaa","bbkba","bblaa","bblba","bbmaa","bbmba","bbnaa","bbnba","bboaa","bboba","bbpaa","bbpba","bbbba","abbba","acbba","dbbba","dcbba","ebbba","ecbba","fbbba","fcbba","gbbba","gcbba","hbbba","hcbba","ibbba","icbba","jbbba","jcbba","kbbba","kcbba","lbbba","lcbba","mbbba","mcbba","nbbba","ncbba","obbba","ocbba","pbbba","pcbba","ccbba","ccaba","ccaca","ccdba","ccdca","cceba","cceca","ccfba","ccfca","ccgba","ccgca","cchba","cchca","cciba","ccica","ccjba","ccjca","cckba","cckca","cclba","cclca","ccmba","ccmca","ccnba","ccnca","ccoba","ccoca","ccpba","ccpca","cccca","accca","adcca","bccca","bdcca","eccca","edcca","fccca","fdcca","gccca","gdcca","hccca","hdcca","iccca","idcca","jccca","jdcca","kccca","kdcca","lccca","ldcca","mccca","mdcca","nccca","ndcca","occca","odcca","pccca","pdcca","ddcca","ddaca","ddada","ddbca","ddbda","ddeca","ddeda","ddfca","ddfda","ddgca","ddgda","ddhca","ddhda","ddica","ddida","ddjca","ddjda","ddkca","ddkda","ddlca","ddlda","ddmca","ddmda","ddnca","ddnda","ddoca","ddoda","ddpca","ddpda","dddda","addda","aedda","bddda","bedda","cddda","cedda","fddda","fedda","gddda","gedda","hddda","hedda","iddda","iedda","jddda","jedda","kddda","kedda","lddda","ledda","mddda","medda","nddda","nedda","oddda","oedda","pddda","pedda","eedda","eeada","eeaea","eebda","eebea","eecda","eecea","eefda","eefea","eegda","eegea","eehda","eehea","eeida","eeiea","eejda","eejea","eekda","eekea","eelda","eelea","eemda","eemea","eenda","eenea","eeoda","eeoea","eepda","eepea","eeeea","ggggg","agggg","ahggg","bgggg","bhggg","cgggg","chggg","dgggg","dhggg","egggg","ehggg","fgggg","fhggg","igggg","ihggg","jgggg","jhggg","kgggg","khggg","lgggg","lhggg","mgggg","mhggg","ngggg","nhggg","ogggg","ohggg","pgggg","phggg","hhggg","hhagg","hhahg","hhbgg","hhbhg","hhcgg","hhchg","hhdgg","hhdhg","hhegg","hhehg","hhfgg","hhfhg","hhigg","hhihg","hhjgg","hhjhg","hhkgg","hhkhg","hhlgg","hhlhg","hhmgg","hhmhg","hhngg","hhnhg","hhogg","hhohg","hhpgg","hhphg","hhhhg","ahhhg","aihhg","bhhhg","bihhg","chhhg","cihhg","dhhhg","dihhg","ehhhg","eihhg","fhhhg","fihhg","ghhhg","gihhg","jhhhg","jihhg","khhhg","kihhg","lhhhg","lihhg","mhhhg","mihhg","nhhhg","nihhg","ohhhg","oihhg","phhhg","pihhg","iihhg","iiahg","iiaig","iibhg","iibig","iichg","iicig","iidhg","iidig","iiehg","iieig","iifhg","iifig","iighg","iigig","iijhg","iijig","iikhg","iikig","iilhg","iilig","iimhg","iimig","iinhg","iinig","iiohg","iioig","iiphg","iipig","iiiig","aiiig","ajiig","biiig","bjiig","ciiig","cjiig","diiig","djiig","eiiig","ejiig","fiiig","fjiig","giiig","gjiig","hiiig","hjiig","kiiig","kjiig","liiig","ljiig","miiig","mjiig","niiig","njiig","oiiig","ojiig","piiig","pjiig","jjiig","jjaig","jjajg","jjbig","jjbjg","jjcig","jjcjg","jjdig","jjdjg","jjeig","jjejg","jjfig","jjfjg","jjgig","jjgjg","jjhig","jjhjg","jjkig","jjkjg","jjlig","jjljg","jjmig","jjmjg","jjnig","jjnjg","jjoig","jjojg","jjpig","jjpjg","jjjjg","ajjjg","akjjg","bjjjg","bkjjg","cjjjg","ckjjg","djjjg","dkjjg","ejjjg","ekjjg","fjjjg","fkjjg","gjjjg","gkjjg","hjjjg","hkjjg","ijjjg","ikjjg","ljjjg","lkjjg","mjjjg","mkjjg","njjjg","nkjjg","ojjjg","okjjg","pjjjg","pkjjg","kkjjg","kkajg","kkakg","kkbjg","kkbkg","kkcjg","kkckg","kkdjg","kkdkg","kkejg","kkekg","kkfjg","kkfkg","kkgjg","kkgkg","kkhjg","kkhkg","kkijg","kkikg","kkljg","kklkg","kkmjg","kkmkg","kknjg","kknkg","kkojg","kkokg","kkpjg","kkpkg","kkkkg","ggggx","gggxx","ggxxx","gxxxx","xxxxx","xxxxy","xxxyy","xxyyy","xyyyy","yyyyy","yyyyw","yyyww","yywww","ywwww","wwwww","wwvww","wvvww","vvvww","vvvwz","avvwz","aavwz","aaawz","aaaaz" };
+    vector<string> v1{ "hot","dot","dog","lot","log","cog" };
+    test.findLadders("aaaaa",
+        "ggggg", v);
     return 0;
 }
