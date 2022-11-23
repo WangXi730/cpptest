@@ -1,6 +1,9 @@
 #include<iostream>
 #include<vector>
 #include<map>
+#include<stack>
+#include<string>
+#include<sstream>
 
 using namespace std;
 
@@ -57,12 +60,55 @@ public:
         }
         return res;
     }
+public:
+    int evalRPN(vector<string>& tokens) {
+        //创建两个栈
+        stack<int> integers;
+        for (int i = 0; i < tokens.size(); ++i) {
+            int tmp = 0;
+            if (tokens[i].size() > 1) {
+                stringstream ss;
+                ss << tokens[i];
+                ss >> tmp;
+                integers.push(tmp);
+                continue;
+            }
+            switch (tokens[i][0]) {
+            case '+':
+                tmp = integers.top();
+                integers.pop();
+                integers.top() += tmp;
+                break;
+            case '-':
+                tmp = integers.top();
+                integers.pop();
+                integers.top() -= tmp;
+                break;
+            case '*':
+                tmp = integers.top();
+                integers.pop();
+                integers.top() *= tmp;
+                break;
+            case '/':
+                tmp = integers.top();
+                integers.pop();
+                integers.top() /= tmp;
+                break;
+            default:
+                stringstream ss;
+                ss << tokens[i];
+                ss >> tmp;
+                integers.push(tmp);
+            }
+        }
+        return integers.top();
+    }
 };
 
 
 int main() {
     Solution test;
-    vector<vector<int>> v{ {1,1},{1,4},{2,3},{3,2 },{4,1},{5,3} };
-    test.maxPoints(v);
+    vector<string> v{ "-128","-128","*","-128","*","-128","*","8","*","-1","*"};
+    test.evalRPN(v);
     return 0;
 }
