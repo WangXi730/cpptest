@@ -103,12 +103,32 @@ public:
         }
         return integers.top();
     }
+public:
+    string reverseWords(string s) {
+        stack<string> st;
+        for (int i = 0; i < s.size(); ++i) {
+            int j = 0;
+            while (i + j < s.size() && s[i + j] != ' ')++j;
+            st.push(s.substr(i, j));
+            i = i + j;
+            while (i < s.size() - 1 && s[i + 1] == ' ')++i;
+        }
+        stringstream ss;
+        while (!st.empty()) {
+            if (st.top().size() != 0)
+                ss << st.top() << " ";
+            st.pop();
+        }
+        char tmp;
+        ss >> tmp;
+        return ss.str().substr(0, ss.str().size() - 1);
+    }
 };
 
 
 int main() {
     Solution test;
-    vector<string> v{ "-128","-128","*","-128","*","-128","*","8","*","-1","*"};
-    test.evalRPN(v);
+    string s = "  hello world  ";
+    test.reverseWords(s);
     return 0;
 }
