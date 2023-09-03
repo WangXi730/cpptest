@@ -3,8 +3,7 @@
 #include<string>
 #include<vector>
 namespace wx {
-	using namespace std;
-	void array_to_c(string& arr) {
+	void array_to_c(std::string& arr) {
 		for (int i = 0; i < arr.size(); ++i) {
 			if (arr[i] == '[') {
 				arr[i] = '{';
@@ -14,11 +13,11 @@ namespace wx {
 			}
 		}
 	}
-	string subreplace(string& s, const string& src, const string& dest) {
+	std::string subreplace(std::string& s, const std::string& src, const std::string& dest) {
 		if (src.size() > s.size()) {
 			return s;
 		}
-		string res;
+		std::string res;
 		int i = 0;
 		for (i = 0; i < s.size() - src.size();) {
 			if (s.substr(i, src.size()) == src) {
@@ -34,9 +33,9 @@ namespace wx {
 		return res;
 	}
 
-	vector<string> split(const string& s, char c) {
+	std::vector<std::string> split(const std::string& s, char c) {
 		int begin = 0;
-		vector<string> res;
+		std::vector<std::string> res;
 		for (int i = 0; i < s.size(); ++i) {
 			if (s[i] == c && i != begin) {
 				res.push_back(s.substr(begin, i - begin));
