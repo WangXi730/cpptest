@@ -13,7 +13,7 @@ int main() {
 	wx::create(s, sv);
 	wx::create(s, sl);
 	std::string s1 = "[0,1,2,3,4,5,null,7,8]";
-	wx::TreeNode<int>* root;
+	wx::TreeNode<long double>* root;
 	wx::create(s1, root);
 	return 0;
 }

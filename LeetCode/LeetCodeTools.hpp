@@ -24,16 +24,25 @@ namespace wx {
 	template<typename Iterator, typename value_type>
 	void create(Iterator begin, Iterator end, TreeNode<value_type>*& res);
 	template<typename Iterator>
-	void create(Iterator begin, Iterator end, char& res);
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, int& res);
-	template<typename Iterator>
 	void create(Iterator begin, Iterator end, std::string& res);
 	template<typename Iterator, typename res_type>
 	void create(Iterator begin, Iterator end, res_type& res);
 	template<typename Iterator>
 	void create(Iterator begin, Iterator end, bool& res);
-
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, char& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, int& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long long& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, float& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, double& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long double& res);
 
 }
 
@@ -179,35 +188,7 @@ namespace wx {
 		}
 	}
 
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, char& res) {
-		while(*begin != '\''){
-			++begin;
-		}
-		res = *begin;
-	}
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, int& res) {
-		res = std::atoi(&*begin);
-	}
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, bool& res) {
-		std::string s(begin, end);
-		if (s.find("true") != std::string::npos) {
-			res = true;
-		}
-		else {
-			res = false;
-		}
-	}
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, std::string& res) {
-		while (*begin != '"')++begin;
-		--end;
-		while (*end != '"')--end;
-		++begin;
-		res = std::string(begin, end);
-	}
+
 
 
 	template<typename Iterator, typename res_type>
@@ -254,8 +235,55 @@ namespace wx {
 		res.resize(res.size() + 1);
 		create(begin, it, *res.rbegin());
 	}
-
-
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, char& res) {
+		while (*begin != '\'') {
+			++begin;
+		}
+		res = *begin;
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, int& res) {
+		res = std::atoi(&*begin);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, bool& res) {
+		std::string s(begin, end);
+		if (s.find("true") != std::string::npos) {
+			res = true;
+		}
+		else {
+			res = false;
+		}
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, std::string& res) {
+		while (*begin != '"')++begin;
+		--end;
+		while (*end != '"')--end;
+		++begin;
+		res = std::string(begin, end);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long long& res) {
+		res = std::atoll(&*begin);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long& res) {
+		res = std::atol(&*begin);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, float& res) {
+		res = std::atof(&*begin);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, double& res) {
+		res = std::atof(&*begin);
+	}
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, long double& res) {
+		res = std::strtold(&*begin, nullptr);
+	}
 	template<typename res_type>
 	void create(const std::string& s, res_type& res) {
 		create(s.begin(), s.end(), res);
