@@ -3,6 +3,9 @@ using namespace std;
 class Solution {
 public:
     bool checkValidGrid(vector<vector<int>>& grid) {
+        if (grid[0][0] != 0) {
+            return false;
+        }
         int n = grid.size();
         int m = grid[0].size();
         int row = 0;
@@ -47,13 +50,34 @@ public:
         }
         return true;
     }
+    int numFactoredBinaryTrees(vector<int>& arr) {
+        sort(arr.begin(), arr.end());
+        unordered_map<int, int> mp;
+        int res = 0;
+        for (int i = 0; i < arr.size(); ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (arr[i] % arr[j] != 0) {
+                    continue;
+                }
+                int t = arr[i] / arr[j];
+                if (mp.find(t) != mp.end()) {
+                    mp[arr[i]] += mp[t] * mp[arr[j]];
+                }
+            }
+            mp[arr[i]] += 1;
+            res += mp[arr[i]];
+        }
+        return res;
+    }
 };
 
 
-
 int main() {
-    vector<vector<int>> v{{0, 11, 16, 5, 20}, { 17,4,19,10,15 }, { 12,1,8,21,6 }, { 3,18,23,14,9 }, { 24,13,2,7,22 }};
+    //vector<vector<int>> v{{8, 3, 6}, { 5,0,1 }, { 2,7,4 }};
+    //Solution test;
+    //cout << boolalpha << test.checkValidGrid(v);
+    vector<int> v = wx::create_vector_int("[2,4,5,10]");
     Solution test;
-    cout << boolalpha << test.checkValidGrid(v);
+    cout << test.numFactoredBinaryTrees(v);
     return 0;
 }
