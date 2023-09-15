@@ -10,6 +10,7 @@
 #include<string>
 #include<stack>
 
+//LeetCodeTools_H
 namespace wx {
 	//在原有的字符串上进行修改，返回修改之前的字符串
 	std::string subreplace(std::string& s, const std::string& src, const std::string& dest);
@@ -20,13 +21,32 @@ namespace wx {
 	template<typename res_type>
 	void create(const std::string& s, res_type& res);
 	template<typename _Ty>
-	struct TreeNode;
+	struct TreeNode {
+		using value_type = _Ty;
+		value_type val;
+		TreeNode<value_type>* left;
+		TreeNode<value_type>* right;
+		TreeNode();
+		TreeNode(value_type x);
+		TreeNode(value_type x, TreeNode<value_type>* left, TreeNode<value_type>* right);
+	};
+	template<typename _Ty>
+	struct SigleListNode {
+		using value_type = _Ty;
+		value_type val;
+		SigleListNode<value_type>* next = nullptr;
+		SigleListNode<value_type>* pre = nullptr;
+		SigleListNode(value_type& x);
+		SigleListNode(value_type&& x);
+	};
 	template<typename Iterator, typename value_type>
 	void create(Iterator begin, Iterator end, TreeNode<value_type>*& res);
-	template<typename Iterator>
-	void create(Iterator begin, Iterator end, std::string& res);
+	template<typename Iterator, typename value_type>
+	void create(Iterator begin, Iterator end, SigleListNode<value_type>*& res);
 	template<typename Iterator, typename res_type>
 	void create(Iterator begin, Iterator end, res_type& res);
+	template<typename Iterator>
+	void create(Iterator begin, Iterator end, std::string& res);
 	template<typename Iterator>
 	void create(Iterator begin, Iterator end, bool& res);
 	template<typename Iterator>
@@ -46,7 +66,7 @@ namespace wx {
 
 }
 
-
+//LeetCodeTools_CPP
 namespace wx {
 
 
@@ -103,16 +123,33 @@ namespace wx {
 	}
 
 	template<typename _Ty>
-	struct TreeNode {
-		using value_type = _Ty;
-		value_type val;
-		TreeNode<value_type>* left;
-		TreeNode<value_type>* right;
-		TreeNode() : val(0), left(nullptr), right(nullptr) {}
-		TreeNode(value_type x) : val(x), left(nullptr), right(nullptr) {}
-		TreeNode(value_type x, TreeNode<value_type>* left, TreeNode<value_type>* right) : val(x), left(left), right(right) {}
+	SigleListNode<_Ty>::SigleListNode(value_type& x) : val(x) {}
+	template<typename _Ty>
+	SigleListNode<_Ty>::SigleListNode(value_type&& x) : val(x) {}
+	
 
-	};
+	template<typename _Ty>
+	TreeNode<_Ty>::TreeNode() : val(0), left(nullptr), right(nullptr){}
+	template<typename _Ty>
+	TreeNode<_Ty>::TreeNode(value_type x) : val(x), left(nullptr), right(nullptr) {}
+	template<typename _Ty>
+	TreeNode<_Ty>::TreeNode(value_type x, TreeNode<value_type>* left, TreeNode<value_type>* right) : val(x), left(left), right(right) {}
+
+
+
+	template<typename Iterator, typename value_type>
+	void create(Iterator begin, Iterator end, SigleListNode<value_type>*& res) {
+		std::vector<value_type> res_v;
+		create(begin, end, res_v);
+		SigleListNode<value_type>* root = nullptr;
+		SigleListNode<value_type>** node = &root;
+		for (int i = 0; i < res_v.size(); ++i) {
+			*node = new SigleListNode<value_type>(std::move(res_v[i]));
+			node = &((*node)->next);
+		}
+		res = root;
+	}
+
 
 	template<typename Iterator, typename value_type>
 	void create(Iterator begin, Iterator end, TreeNode<value_type>*& res) {

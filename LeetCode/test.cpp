@@ -3,6 +3,7 @@
 #include<vector>
 #include<string>
 #include<list>
+#include<forward_list>
 
 
 
@@ -15,5 +16,9 @@ int main() {
 	std::string s1 = "[0,1,2,3,4,5,null,7,8]";
 	wx::TreeNode<long double>* root;
 	wx::create(s1, root);
+	std::vector<wx::SigleListNode<std::list<int>>*> slv;
+	wx::create(s, slv);
+
+
 	return 0;
 }
