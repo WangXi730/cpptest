@@ -13,13 +13,21 @@ public:
             mp[edges[i][1]].insert(edges[i][0]);
 
         }
-        vector<int> hash(n + 1,0);
-        for (int i = 0; i < n; ++i) {
-            for (int j = i + 1; j < n; ++j) {
+        vector<int> hash(edges.size() + 1, 0);
+        for (int i = 1; i <= n; ++i) {
+            for (int j = i + 1; j <= n; ++j) {
                 int times = mp[i].size() + mp[j].size() - mp[i].count(j);
                 ++hash[times];
             }
         }
+        for (int i = hash.size() - 2; i >= 0; --i) {
+            hash[i] += hash[i + 1];
+        }
+        vector<int> res(queries.size());
+        for (int i = 0; i < queries.size(); ++i) {
+            res[i] = hash[queries[i] + 1];
+        }
+        return res;
     }
 };
 
