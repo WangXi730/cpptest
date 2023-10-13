@@ -5,6 +5,16 @@
 #include<list>
 #include<forward_list>
 
+using TreeNode = wx::TreeNode<int>;
+
+
+struct A { int a; };
+struct B : A
+{
+	void func() {
+		std::cout << this->a;
+	}
+};
 
 
 int main() {
@@ -18,7 +28,6 @@ int main() {
 	wx::create(s1, root);
 	std::vector<wx::SigleListNode<std::list<int>>*> slv;
 	wx::create(s, slv);
-
 
 	return 0;
 }
