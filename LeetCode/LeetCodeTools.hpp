@@ -1,4 +1,5 @@
 #pragma once
+#include<iostream>
 #include<map>
 #include<unordered_map>
 #include<set>
@@ -10,6 +11,8 @@
 #include<string>
 #include<stack>
 
+#define leetcode using namespace std; using namespace wx;
+
 //LeetCodeTools_H
 namespace wx {
 	//在原有的字符串上进行修改，返回修改之前的字符串
@@ -17,9 +20,14 @@ namespace wx {
 	//用point分割s，如果设置beg和end，则不对beg和end之间的字符进行解析
 	std::vector<std::string> split(std::string& s, const std::string& point, const std::string& beg = "", const std::string& end = "");
 	
-	//leetcode系列create函数
+	//反序列化create函数
 	template<typename res_type>
 	void create(const std::string& s, res_type& res);
+	//序列化save
+	template<typename container_t>
+	void save(std::string& dest, const container_t& container);
+	
+	//数据结构
 	template<typename _Ty>
 	struct TreeNode {
 		using value_type = _Ty;
@@ -39,12 +47,14 @@ namespace wx {
 		SigleListNode(value_type& x);
 		SigleListNode(value_type&& x);
 	};
+
+	//实现细节
 	template<typename Iterator, typename value_type>
 	void create(Iterator begin, Iterator end, TreeNode<value_type>*& res);
 	template<typename Iterator, typename value_type>
 	void create(Iterator begin, Iterator end, SigleListNode<value_type>*& res);
-	template<typename Iterator, typename res_type>
-	void create(Iterator begin, Iterator end, res_type& res);
+	template<typename Iterator, typename container_t>
+	void create(Iterator begin, Iterator end, container_t& res);
 	template<typename Iterator>
 	void create(Iterator begin, Iterator end, std::string& res);
 	template<typename Iterator>
@@ -63,6 +73,21 @@ namespace wx {
 	void create(Iterator begin, Iterator end, double& res);
 	template<typename Iterator>
 	void create(Iterator begin, Iterator end, long double& res);
+
+
+	template<typename value_type>
+	void save(std::string& dest, const TreeNode<value_type>*& root);
+	template<typename value_type>
+	void save(std::string& dest, const SigleListNode<value_type>*& node_ptr);
+	void save(std::string& dest, const std::string& value);
+	void save(std::string& dest, const bool& value);
+	void save(std::string& dest, const char& value);
+	void save(std::string& dest, const int& value);
+	void save(std::string& dest, const long& value);
+	void save(std::string& dest, const long long& value);
+	void save(std::string& dest, const float& value);
+	void save(std::string& dest, const double& value);
+	void save(std::string& dest, const long double& value);
 
 }
 
@@ -228,8 +253,8 @@ namespace wx {
 
 
 
-	template<typename Iterator, typename res_type>
-	void create(Iterator begin, Iterator end, res_type& res) {
+	template<typename Iterator, typename container_t>
+	void create(Iterator begin, Iterator end, container_t& res) {
 		while (begin != end) {
 			if (*begin == '[') {
 				++begin;
@@ -242,6 +267,9 @@ namespace wx {
 			if (*end == ']') {
 				break;
 			}
+		}
+		if (begin == end) {
+			return;
 		}
 		auto it = begin;
 		while (it != end) {
@@ -324,6 +352,107 @@ namespace wx {
 	template<typename res_type>
 	void create(const std::string& s, res_type& res) {
 		create(s.begin(), s.end(), res);
+	}
+
+
+
+	//序列化save
+	template<typename value_type>
+	void save(std::string& dest, TreeNode<value_type>* root) {
+		std::vector<std::string> sv;
+		//层次遍历
+		std::queue<TreeNode<value_type>*> q;
+		q.push(root);
+		while (!q.empty()) {
+			TreeNode<value_type>* node = q.front();
+			q.pop();
+			if (node == nullptr) {
+				sv.emplace_back("null");
+				continue;
+			}
+			q.push(node->left);
+			q.push(node->right);
+			std::string tmp;
+			save(tmp, node->val);
+			sv.emplace_back(std::move(tmp));
+		}
+		int i = sv.size() - 1;
+		while (i >= 0 && sv[i] == "null") --i;
+		if (i < 0) {
+			dest = "[]";
+			return;
+		}
+		dest = "[";
+		for (int j = 0; j <= i; ++j) {
+			dest += sv[j] + ",";
+		}
+		*dest.rbegin() = ']';
+	}
+	template<typename value_type>
+	void save(std::string& dest, SigleListNode<value_type>* node_ptr) {
+		if (node_ptr == nullptr) {
+			dest = "[]";
+			return;
+		}
+		dest = "[";
+		while (node_ptr != nullptr) {
+			std::string tmp;
+			save(tmp, node_ptr->val);
+			dest += tmp + ",";
+			node_ptr = node_ptr->next;
+		}
+		*dest.rbegin() = ']';
+	}
+	template<typename container_t>
+	void save(std::string& dest, const container_t& container) {
+		if (container.empty()) {
+			dest = "[]";
+			return;
+		}
+		dest = "[";
+		for (auto& e : container) {
+			std::string tmp;
+			save(tmp, e);
+			dest += tmp + ",";
+		}
+		*dest.rbegin() = ']';
+	}
+
+	void save(std::string& dest, const std::string& value) {
+		dest = "\"";
+		dest += value;
+		dest += "\"";
+	}
+	void save(std::string& dest, const bool& value) {
+		if (value) {
+			dest = "true";
+		}
+		else {
+			dest = "false";
+		}
+	}
+	void save(std::string& dest, const char& value) {
+		dest = "'";
+		dest.push_back(value);
+		dest.push_back('\'');
+	}
+	void save(std::string& dest, const int& value) {
+		dest = std::to_string(value);
+	}
+	void save(std::string& dest, const long& value) {
+		dest = std::to_string(value);
+	}
+	void save(std::string& dest, const long long& value) {
+		dest = std::to_string(value);
+	}
+	void save(std::string& dest, const float& value) {
+		dest = std::to_string(value);
+	}
+	void save(std::string& dest, const double& value) {
+		dest = std::to_string(value);
+	}
+	void save(std::string& dest, const long double& value) {
+		dest = std::to_string(value);
 	}
 
 
