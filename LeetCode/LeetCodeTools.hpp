@@ -11,7 +11,7 @@
 #include<string>
 #include<stack>
 
-#define leetcode using namespace std; using namespace wx;
+#define leetcode using namespace std;
 
 //LeetCodeTools_H
 namespace wx {
