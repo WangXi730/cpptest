@@ -97,6 +97,45 @@ public:
         }
         return res;
     }
+public:
+    vector<int> avoidFlood(vector<int>& rains) {
+        int n = rains.size();
+        unordered_map<int, int> ump;//Ë®³Ø £º ÂúµÄÈÕÆÚ
+        ump.reserve(n);
+        vector<int> ans(n, 0);
+        for (int i = 0; i < n; ++i) {
+            if (rains[i] != 0) {
+                ans[i] = -1;
+                if (ump.find(rains[i]) == ump.end()) {
+                    //×¢Ë®
+                    ump[rains[i]] = i;
+                }
+                else {
+                    //êâÔÖ
+                    int j = ump[rains[i]] + 1;
+                    while (j < i) {
+                        if (ans[j] == 0) {
+                            ans[j] = rains[i];
+                            ump[rains[i]] = i;
+                            break;
+                        }
+                        ++j;
+                    }
+                    if (j >= i) {
+                        //êâÔÖÊ§°Ü
+                        return {};
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < n; ++i) {
+            if (ans[i] == 0) {
+                ans[i] = 1;
+            }
+        }
+        return ans;
+    }
+
 };
 
 
@@ -109,7 +148,7 @@ int main() {
     wx::create("[[1,10,10],[1,4,5],[2,3,6]]", mat);
     test.kthSmallest(mat,14);
     vector<int> nums;
-    wx::create("[1,2,4,7,10]", nums);
+    wx::create("[1,2,0,0,2,1]", nums);
     test.averageValue(nums);
 
 
@@ -118,5 +157,9 @@ int main() {
     wx::create("[1,2,3,4,5,6,7]", root);
     vector<int> to_del{3,5};
     test.delNodes(root, to_del);
+
+    vector<int> rains;
+    //wx::create("", rains);
+    test.avoidFlood(rains);
     return 0;
 }
