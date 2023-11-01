@@ -11,10 +11,10 @@ public:
         }
         bool operator()(int a, int b) {
             while (p_[a] != -1) {
-                if (p_[a] == b) {
-                    return false;
-                }
+                //if (p_[a] == b) {
+                //}
                 a = p_[a];
+                    //return false;
             }
             return true;
         }
@@ -26,17 +26,18 @@ public:
         for (int i = 0; i < n; ++i) {
             sorted_node[i] = i;
         }
-        myFunc f(parents);
-        sort(sorted_node.begin(), sorted_node.end(), f);/*[&](int a, int b) {
-            while (parents[a] != -1) {
-                if (parents[a] == b) {
+        //myFunc f(parents);
+        sort(sorted_node.begin(), sorted_node.end(),[&](int a, int b) {
+            int c = a;
+            while (parents[c] != -1) {
+                if (parents[c] == b) {
                     return false;
                 }
-                a = parents[a];
+                c = parents[c];
             }
             return true;
             });
-            */
+            
         vector<set<int>> sets(n);
         vector<int> ans(n,1);
         for (int i = n - 1; i >= 0; --i) {
