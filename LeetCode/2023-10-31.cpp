@@ -5,82 +5,71 @@ leetcode
 
 class Solution {
 public:
-    struct myFunc
-    {
-        myFunc(vector<int>&p):p_(p){
-        }
-        bool operator()(int a, int b) {
-            while (p_[a] != -1) {
-                //if (p_[a] == b) {
-                //}
-                a = p_[a];
-                    //return false;
-            }
-            return true;
-        }
-        vector<int>& p_;
-    };
     vector<int> smallestMissingValueSubtree(vector<int>& parents, vector<int>& nums) {
-        int n = nums.size();
-        vector<int> sorted_node(n);
-        for (int i = 0; i < n; ++i) {
-            sorted_node[i] = i;
-        }
-        //myFunc f(parents);
-        sort(sorted_node.begin(), sorted_node.end(),[&](int a, int b) {
-            int c = a;
-            while (parents[c] != -1) {
-                if (parents[c] == b) {
-                    return false;
-                }
-                c = parents[c];
-            }
-            return true;
-            });
-            
-        vector<set<int>> sets(n);
+        int n = parents.size();
         vector<int> ans(n,1);
-        for (int i = n - 1; i >= 0; --i) {
-            int node = sorted_node[i];
-            //先把这次的元素添加进去
-            sets[node].insert(nums[node]);
-            //开始遍历，找到第一个不存在的元素
-            auto e = sets[node].lower_bound(ans[node]);
-            for (int j = ans[node]; j <= 10000; ++j) {
-                if (*e != j) {
-                    ans[node] = j;
-                    break;
-                }
-                ++e;
-                if (e == sets[node].end()) {
-                    ans[node] = *sets[node].rbegin() + 1;
-                    break;
-                }
+        int i = 0;
+        for (i = 0; i < n; ++i) {
+            if (nums[i] == 1) {
+                break;
             }
-            //创造下一个父节点的set
-            if (parents[node] == -1) {
-                continue;
+        }
+        if (i < n) {
+            vector<bool> table(100001, false);
+            vector<list<int>> tree(n);
+            for (int j = 1; j < n; ++j) {
+                tree[parents[j]].push_back(j);
             }
-            ans[parents[node]] = max(ans[parents[node]],ans[node]);
-            if (sets[parents[node]].size() == 0) {
-                sets[parents[node]] = move(sets[node]);
+            dfs(i, table, tree, nums);
+            int j = 1;
+            while (table[j]) {
+                ++j;
             }
-            else {
-                for (auto& e : sets[node]) {
-                    sets[parents[node]].insert(e);
+            ans[i] = j;
+            int pr = parents[i];
+            while (pr != -1) {
+                table[nums[pr]] = true;
+                for (auto& e : tree[pr]) {
+                    if (e != i) {
+                        dfs(e, table, tree, nums);
+                    }
                 }
+                while (table[j]) {
+                    ++j;
+                }
+                ans[pr] = j;
+                //迭代
+                i = pr;
+                pr = parents[i];
             }
         }
         return ans;
     }
+private:
+    void dfs(int root, vector<bool>& table, vector<list<int>>& tree, vector<int>&nums) {
+        //访问
+        table[nums[root]] = true;
+        //遍历子节点
+        for (auto& e : tree[root]) {
+            dfs(e, table, tree, nums);
+        }
+    }
 };
-
+#include<fstream>
 
 int main() {
     vector<int> parents;
     vector<int> nums;
-    wx::create("[-1,0,0,2]", parents);
-    wx::create("[1,2,3,4]", nums);
+    string ps;
+    string ns;
+    ifstream p;
+    p.open("parents.txt", std::ios::in);
+    ifstream n;
+    n.open("nums.txt", std::ios::in);
+    p >> ps;
+    n >> ns;
+    wx::create(ps, parents);
+    wx::create(ns, nums);
     Solution test;
     test.smallestMissingValueSubtree(parents, nums);
     return 0;
